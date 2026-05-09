@@ -5,7 +5,6 @@
 
 // ============ FUNCTION HEADERS =============
 void flash();
-void beep();
 void send_test();
 void send_pew();
 
@@ -185,6 +184,9 @@ void ir_send_starting_pulse(){
     ir_pulse(12);
 }
 
+void ir_send_ending_pulse(){
+    ir_pulse(12);
+}
 void ir_send_break_after_byte(){
     ir_gap(43);
 }
@@ -211,13 +213,9 @@ void send_byte(uint8_t byte){
 
 // lowest level: get the length of a gap
 uint16_t get_gap(){
+
     // if already high, abort:
-
-
-
     if(GPIO_ReadInputData(GPIOD) & GPIO_Pin_6){return 0xFFFF;}
-
-    flash();
 
     // wait to go HIGH
     TIM2->CNT = 0;
@@ -386,6 +384,69 @@ uint16_t decode_rx(){
 //     }
 // }
 
+// ========= Buzzer ========
+
+// beep with buzzer (also shitty implementation using delay)
+void buzzer_tone(uint32_t freq, uint32_t duration_ms){
+
+    if (freq == 0) { Delay_Ms(duration_ms); return; }
+
+    uint16_t half_period_us = (uint16_t)(1000000UL / ((uint32_t)freq * 2));
+    uint32_t cycles         = ((uint32_t)freq * duration_ms) / 1000;
+
+    for (uint32_t i = 0; i < cycles; i++) {
+        io_buzzflasher(1);
+        Delay_Us(half_period_us);
+        io_buzzflasher(0);
+        Delay_Us(half_period_us);
+    }
+}
+
+void buzzer_sweep(uint16_t start_freq, uint16_t end_freq, uint16_t duration_ms){
+    uint16_t step_ms = 5;
+    uint16_t steps   = duration_ms / step_ms;
+    if (steps == 0) steps = 1;
+
+    for (uint16_t i = 0; i < steps; i++) {
+        int32_t freq = (int32_t)start_freq +
+                       ((int32_t)((int16_t)(end_freq - start_freq)) * (int32_t)i) / steps;
+
+        uint16_t half_period_us = (uint16_t)(1000000UL / ((uint32_t)freq * 2));
+        uint32_t cycles         = ((uint32_t)freq * step_ms) / 1000;
+
+        for (uint32_t j = 0; j < cycles; j++) {
+            io_buzzflasher(1);
+            Delay_Us(half_period_us);
+            io_buzzflasher(0);
+            Delay_Us(half_period_us);
+        }
+    }
+
+}
+
+void buzzer_shoot(){
+    buzzer_sweep(2500, 200, 120);
+}
+
+void buzzer_hit(){
+    buzzer_sweep(800, 400, 100);
+    Delay_Ms(30);
+    buzzer_sweep(600, 150, 100);
+    Delay_Ms(40);
+    buzzer_sweep(350, 60, 160);
+
+}
+
+// flash an LED (you guessed it! shitty implementation using delay! Not that it matters here)
+void flash(){
+    buzzer_hit();
+    Delay_Ms(30);
+    io_buzzflasher(1);
+    Delay_Ms(30);
+    io_buzzflasher(0);
+}
+
+
 // xxxxxxxxxxxxxxxx END OF HARDWARE ABSTRACTION xxxxxxxxxxxxxxxxxxx
 
 // ==================== TOP LEVEL GAME LOGIC ==================
@@ -398,6 +459,7 @@ void process_rx_data(uint16_t rx){
         key_pointer++;
         if(key_pointer==4){
             flash();
+
             key_pointer = 0;
         }
     }else{
@@ -410,7 +472,8 @@ void send_test(){
     for(int i=0; i<20; i++){
         send_byte(i);
     }
-    Delay_Ms(50);
+    // in case of buzzing after there is no need for delay
+    //Delay_Ms(50);
 }
 
 void send_pew(){
@@ -419,29 +482,8 @@ void send_pew(){
     send_byte('E');
     send_byte('W');
     send_byte('!');
-    ir_send_starting_pulse();
+    ir_send_ending_pulse();
     Delay_Ms(50);
-}
-
-
-// beep with buzzer (also shitty implementation using delay)
-void beep(){
-     for(int i=0; i<40; i++){
-        GPIO_SetBits(GPIOD, GPIO_Pin_3);
-        Delay_Us(1200+i*8);
-        GPIO_ResetBits(GPIOD, GPIO_Pin_3);
-        Delay_Us(1200+i*8);
-    }
-}
-
-// flash an LED (you guessed it! shitty implementation using delay! Not that it matters here)
-void flash(){
-    for(int i=0; i<10; i++){
-        io_buzzflasher(1);
-        Delay_Ms(50);
-        io_buzzflasher(0);
-        Delay_Ms(50);
-    }
 }
 
 
@@ -463,6 +505,7 @@ int main(void){
         // Check if trigger button pressed, and if so, SHOOT
         if(io_trigger_pressed()){
             send_test();
+            buzzer_shoot();
             send_pew();
             Delay_Ms(200);
         }
@@ -474,7 +517,6 @@ int main(void){
 
             // pass the new byte into processing
             process_rx_data(rx_data);
-            flash();
         }
 
         // I2C_fetch();
