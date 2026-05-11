@@ -6,7 +6,7 @@ PROVIDE( _stack_size = __stack_size );
 
 MEMORY
 {
-	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 16K
+	FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 12K
 	RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 2K
 }
 
