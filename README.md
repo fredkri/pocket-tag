@@ -30,11 +30,12 @@ One Pocket Tag kit contains the following:
 | 1.12 | &nbsp;&nbsp;Resistor 10 Ohms | 1 |
 | 1.13 | &nbsp;&nbsp;Zip tie | 2 |
 | 2 | **Laser gun Assembly** | |
-| 2.1 | &nbsp;&nbsp;IR LED | 1 |
-| 2.2 | &nbsp;&nbsp;Pink LED | 1 |
-| 2.3 | &nbsp;&nbsp;Push button | 1 |
-| 2.4 | &nbsp;&nbsp;Resistor 68 Ohms | 1 |
-| 2.5 | &nbsp;&nbsp;Plastic case, left | 1 |
-| 2.6 | &nbsp;&nbsp;Plastic case, right | 1 |
+| 2.1 | &nbsp;&nbsp;Laser gun PCB | 1 |
+| 2.2 | &nbsp;&nbsp;IR LED | 1 |
+| 2.3 | &nbsp;&nbsp;Pink LED | 1 |
+| 2.4 | &nbsp;&nbsp;Push button | 1 |
+| 2.5 | &nbsp;&nbsp;Resistor 68 Ohms | 1 |
+| 2.6 | &nbsp;&nbsp;Plastic case, left | 1 |
+| 2.7 | &nbsp;&nbsp;Plastic case, right | 1 |
 | 3 | **Cable** | 1 |
 
