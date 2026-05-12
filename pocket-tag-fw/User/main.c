@@ -1,10 +1,13 @@
 #include "debug.h"
-#define DEBUG_BOARD
+// #define DEBUG_BOARD
 
 #define I2C_ADDR 0x17
+#define PLAYER_NAME_LENGTH 17
+#define HIT_SONG_LENGTH 17
+
 
 // ============ FUNCTION HEADERS =============
-void flash();
+void flash_and_buzz();
 void send_test();
 void send_pew();
 void storage_save_id();
@@ -15,15 +18,22 @@ void buzzer_sweep(uint16_t start_freq, uint16_t end_freq, uint16_t duration_ms);
 
 // =========== GLOBAL VARIABLES ==============
 volatile uint8_t player_id = 0;
-volatile uint8_t player_name[17];
-volatile uint8_t hit_song[17];
+volatile uint8_t player_name[PLAYER_NAME_LENGTH];
+volatile uint8_t hit_song[HIT_SONG_LENGTH];
+volatile uint16_t got_hit_counter = 0;
 
 // =========== I2C command IDs ===============
 #define I2C_COMMAND_ID      0x01
 #define I2C_COMMAND_NAME    0x02
 #define I2C_COMMAND_HITSONG 0x03
 #define I2C_COMMAND_NOTE    0x04
+#define I2C_COMMAND_HIT_COUNTER 0x05
 
+// =========== IR message IDs ===============
+#define IR_MSG_STARTBYTE 0x77
+
+#define IR_MSG_PLAYER_ID_NAME 0x01
+#define IR_MSG_HITSONG 0x02
 
 // =================================================================================
 // =============================== GPIOS and HW CONFIG =============================
@@ -253,6 +263,10 @@ void send_byte(uint8_t byte){
     ir_send_break_after_byte();
 }
 
+void send_byte_cs(uint8_t byte, uint8_t *cs) {
+    *cs += byte;
+    send_byte(byte);
+}
 
 // ========= IR RX ========
 
@@ -383,7 +397,7 @@ void i2c_received_name(){
 
 // I2C_COMMAND_HITSONG
 void i2c_received_hitsong(){
- // copy the new name
+ // copy the new hit song
     for(int i=0; i<i2c_rx_index; i++){
         hit_song[i] = i2c_command[i+1];
     }
@@ -398,6 +412,11 @@ void i2c_received_hitsong(){
 // I2C_COMMAND_NOTE
 void i2c_play_note(){
     buzzer_sweep(800, 400, 100);
+}
+
+// I2C_COMMAND_GAME_COUNTER
+void i2c_reset_game_counter(){
+
 }
 
 void i2c_parse_command(){
@@ -431,6 +450,13 @@ void i2c_parse_command(){
                 i2c_play_note();
             }
             break;
+
+        case I2C_COMMAND_HIT_COUNTER:
+            if(i2c_rx_index == 1){
+
+            }else{
+                i2c_reset_game_counter();
+            }  
     
         default:
             break;
@@ -577,11 +603,11 @@ void buzzer_hit(){
 }
 
 // flash an LED (you guessed it! shitty implementation using delay! Not that it matters here)
-void flash(){
+void flash_and_buzz(){
     buzzer_hit();
-    Delay_Ms(30);
+    Delay_Ms(100);
     io_buzzflasher(1);
-    Delay_Ms(30);
+    Delay_Ms(100);
     io_buzzflasher(0);
 }
 
@@ -670,13 +696,18 @@ void process_rx_data(uint16_t rx){
     if(rx == key[key_pointer]){
         key_pointer++;
         if(key_pointer==4){
-            flash();
+            flash_and_buzz();
+            got_hit_counter +=1;
 
             key_pointer = 0;
         }
     }else{
         key_pointer = 0;
     }
+}
+
+uint8_t ir_calc_checksum(){
+
 }
 
 void send_test(){
@@ -699,6 +730,38 @@ void send_pew(){
     Delay_Ms(50);
 }
 
+
+void ir_send_id_name(){
+    uint8_t cs = 0;
+    ir_send_preamble();
+    send_byte(IR_MSG_STARTBYTE);
+    send_byte_cs(IR_MSG_PLAYER_ID_NAME, &cs);
+    send_byte_cs(player_id, &cs);
+    for(uint16_t i=0; i<PLAYER_NAME_LENGTH; i++){
+        if(player_name[i] == '\0'){break;}
+        send_byte_cs(player_name[i], &cs);
+        }
+    send_byte(cs);
+    ir_send_ending_pulse();
+    Delay_Ms(50);
+}
+
+void ir_send_hitsong(){
+    ir_send_preamble();
+    send_byte(IR_MSG_STARTBYTE);
+    send_byte(IR_MSG_HITSONG);
+    for(uint16_t i=0; i<HIT_SONG_LENGTH; i++){
+        if(hit_song[i] == '\0'){break;}
+        send_byte(hit_song[i]);
+        }
+    ir_send_ending_pulse();
+    Delay_Ms(50);
+}
+
+void ir_send_message(){    
+    ir_send_id_name();
+    ir_send_hitsong();
+}
 // =========================================================
 // ========================== MAIN =========================
 // =========================================================
@@ -718,28 +781,29 @@ int main(void){
     while(1){
         
         // Check if trigger button pressed, and if so, SHOOT
-        // if(io_trigger_pressed()){
-        //     send_test();
-        //     buzzer_shoot();
-        //     send_pew();
-        //     Delay_Ms(200);
-        // }
-
-        // // check if there is a new byte in the IR RECEIVER
-        // if (decode_rx()){
-        //     // debug print it on the debug uart
-        //     // USART_SendData(USART1, rx_data);
-
-        //     // pass the new byte into processing
-        //     process_rx_data(rx_data);
-        // }
-
-        for(uint16_t i=0; i<16; i++){
-            USART_SendData(USART1, player_name[i]);
-            Delay_Us(80);
+        if(io_trigger_pressed()){
+            ir_send_id_name();
+            buzzer_shoot();
+            ir_send_hitsong();
+            // send_pew();
+            Delay_Ms(200);
         }
 
-        Delay_Ms(500);
+        // check if there is a new byte in the IR RECEIVER
+        if (decode_rx()){
+            // debug print it on the debug uart
+            // USART_SendData(USART1, rx_data);
+
+            // pass the new byte into processing
+            process_rx_data(rx_data);
+        }
+
+        // for(uint16_t i=0; i<16; i++){
+        //     USART_SendData(USART1, player_name[i]);
+        //     Delay_Us(80);
+        // }
+
+        // Delay_Ms(500);
 
     }
     // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
