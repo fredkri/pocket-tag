@@ -4,12 +4,11 @@
 #define I2C_ADDR 0x17
 #define PLAYER_NAME_LENGTH 17
 #define HIT_SONG_LENGTH 17
+#define IR_MSG_MAX_LENGTH  30
 
 
 // ============ FUNCTION HEADERS =============
 void flash_and_buzz();
-void send_test();
-void send_pew();
 void storage_save_id();
 void storage_save_name();
 void storage_save_hit_song();
@@ -21,6 +20,9 @@ volatile uint8_t player_id = 0;
 volatile uint8_t player_name[PLAYER_NAME_LENGTH];
 volatile uint8_t hit_song[HIT_SONG_LENGTH];
 volatile uint16_t got_hit_counter = 0;
+uint8_t ir_msg_tx_buf[IR_MSG_MAX_LENGTH];
+uint8_t ir_msg_rx_buf[IR_MSG_MAX_LENGTH];
+
 
 // =========== I2C command IDs ===============
 #define I2C_COMMAND_ID      0x01
@@ -34,6 +36,13 @@ volatile uint16_t got_hit_counter = 0;
 
 #define IR_MSG_PLAYER_ID_NAME 0x01
 #define IR_MSG_HITSONG 0x02
+
+// =========== IR states ===============
+#define IR_WAIT_FOR_STARTBYTE 1
+#define IR_GET_LENGTH 2
+#define IR_GET_COMMAND 3
+#define IR_GET_PAYLOAD 4
+#define IR_GET_CHECKSUM 5
 
 // =================================================================================
 // =============================== GPIOS and HW CONFIG =============================
@@ -690,78 +699,93 @@ void storage_load(){
 
 
 // IR COMMUNICATION 
-char key[] = {'P', 'E', 'W', '!'};
 void process_rx_data(uint16_t rx){
-    static uint16_t key_pointer = 0;
-    if(rx == key[key_pointer]){
-        key_pointer++;
-        if(key_pointer==4){
-            flash_and_buzz();
-            got_hit_counter +=1;
+    
+    static uint8_t state = 1;
+    static uint8_t length = 0;
+    static uint8_t command = 0;
+    static uint8_t buffer_pointer = 0;
 
-            key_pointer = 0;
+    switch(state){
+    // Address matched, master writing to us
+    case IR_WAIT_FOR_STARTBYTE:{
+        if (rx == IR_MSG_STARTBYTE){
+            length = 0;
+            state = IR_GET_LENGTH;
         }
-    }else{
-        key_pointer = 0;
+        break;
+    }
+    case IR_GET_LENGTH:{
+        length = rx;
+        if (length > IR_MSG_MAX_LENGTH){
+            state = IR_WAIT_FOR_STARTBYTE;
+        } else {
+        state = IR_GET_COMMAND;
+        }
+        break;
+    }
+    case IR_GET_COMMAND:{
+        command = rx;
+        // add safety checks
+        state = IR_GET_PAYLOAD;
+        break;
+    }
+    case IR_GET_PAYLOAD:{
+        ir_msg_rx_buf[buffer_pointer++] = rx;
+        length--;
+        if (length == 0) {
+            state = IR_GET_CHECKSUM;
+        }
+        break;
+    }
+    case IR_GET_CHECKSUM:{
+        if (command == IR_MSG_PLAYER_ID_NAME){
+            flash_and_buzz();
+        }
+        state = IR_WAIT_FOR_STARTBYTE;
+        break;
+    }
+    default:
+        break;
     }
 }
 
-uint8_t ir_calc_checksum(){
-
-}
-
-void send_test(){
-    ir_send_preamble();
-    for(int i=0; i<16; i++){
-        if(player_name[i] == '\0'){break;}
-        send_byte(player_name[i]);
-    }
-    // in case of buzzing after there is no need for delay
-    //Delay_Ms(50);
-}
-
-void send_pew(){
-    ir_send_preamble();
-    send_byte('P');
-    send_byte('E');
-    send_byte('W');
-    send_byte('!');
-    ir_send_ending_pulse();
-    Delay_Ms(50);
-}
-
-
-void ir_send_id_name(){
-    uint8_t cs = 0;
+void ir_send_message(uint8_t *buf, uint8_t len){    
+    uint8_t cs = len;
     ir_send_preamble();
     send_byte(IR_MSG_STARTBYTE);
-    send_byte_cs(IR_MSG_PLAYER_ID_NAME, &cs);
-    send_byte_cs(player_id, &cs);
-    for(uint16_t i=0; i<PLAYER_NAME_LENGTH; i++){
-        if(player_name[i] == '\0'){break;}
-        send_byte_cs(player_name[i], &cs);
-        }
+    send_byte(len);
+    for (uint8_t i = 0; i < len; i++) {
+        cs += buf[i];
+        send_byte(buf[i]);
+    }
     send_byte(cs);
     ir_send_ending_pulse();
-    Delay_Ms(50);
+    // Delay_Ms(50);
+}
+
+void ir_send_id_name(){
+    uint8_t len = 0;    
+    ir_msg_tx_buf[len++] = IR_MSG_PLAYER_ID_NAME;
+    ir_msg_tx_buf[len++] = (uint8_t)player_id;
+    for (uint16_t i = 0; i < PLAYER_NAME_LENGTH; i++) {
+        if (player_name[i] == '\0') break;
+        ir_msg_tx_buf[len++] = (uint8_t)player_name[i];
+    }
+
+    ir_send_message(ir_msg_tx_buf, len);
 }
 
 void ir_send_hitsong(){
-    ir_send_preamble();
-    send_byte(IR_MSG_STARTBYTE);
-    send_byte(IR_MSG_HITSONG);
+    uint8_t len = 0;
+    ir_msg_tx_buf[len++] = IR_MSG_HITSONG;
     for(uint16_t i=0; i<HIT_SONG_LENGTH; i++){
         if(hit_song[i] == '\0'){break;}
-        send_byte(hit_song[i]);
+        ir_msg_tx_buf[len++] = (uint8_t)(hit_song[i]);
         }
-    ir_send_ending_pulse();
-    Delay_Ms(50);
+    ir_send_message(ir_msg_tx_buf, len);
 }
 
-void ir_send_message(){    
-    ir_send_id_name();
-    ir_send_hitsong();
-}
 // =========================================================
 // ========================== MAIN =========================
 // =========================================================
@@ -785,14 +809,13 @@ int main(void){
             ir_send_id_name();
             buzzer_shoot();
             ir_send_hitsong();
-            // send_pew();
             Delay_Ms(200);
         }
 
         // check if there is a new byte in the IR RECEIVER
         if (decode_rx()){
             // debug print it on the debug uart
-            // USART_SendData(USART1, rx_data);
+            USART_SendData(USART1, rx_data);
 
             // pass the new byte into processing
             process_rx_data(rx_data);
