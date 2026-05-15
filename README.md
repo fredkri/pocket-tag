@@ -5,9 +5,7 @@ Tiny laser tag SAO!
 
 Fully functional, based on a narrow beam IR LED, a VS838 IR demodulating receiver, a tiny 8-pin MCU and a cute 3d-printed blaster. Features beeps, flashes and excitement!
 
-https://github.com/user-attachments/assets/afc32716-09e5-48ad-a74b-cbefed638b2c
-
-Assembly instructions and documentation comming soon.
+<video controls src="Pocket Tag.mov" title=""></video>
 
 ## Bill of Materials
 
@@ -39,3 +37,7 @@ One Pocket Tag kit contains the following:
 | 2.7 | &nbsp;&nbsp;Plastic case, right | 1 |
 | 3 | **Cable** | 1 |
 
+
+## Assembly instructions
+
+Most of the instructions are found in the interactive BOM files in the Assembly instruction folder. The rest is up to the user's interpretation.

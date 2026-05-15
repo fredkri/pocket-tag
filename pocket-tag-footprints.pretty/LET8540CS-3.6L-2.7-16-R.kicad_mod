@@ -1,0 +1,300 @@
+(footprint "LET8540CS-3.6L-2.7-16-R"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "BZ1"
+		(at 0 -5.9 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "b6a358f9-e6a3-45a8-bf39-19fd4cefad65")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "Buzzer"
+		(at 0 6.2 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "03aa2257-5bbe-4a31-b868-1e47e368ec3d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://www.tme.eu/Document/89662a5c3592d02f27a27731455ba167/LET8540CS-3.6L-2.7-16-R.pdf"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "755c4953-e96a-460f-8597-a0556c1aad4b")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "89290e96-b854-4dca-9756-97c69630b5ec")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "MPN" "LET8540CS-3.6L-2.7-16-R"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "3366cac6-5bfc-4ebf-8f7a-c1eba715c624")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Manufacturer" "CRE_SOUND ELECTRONICS"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "47c9c2e5-90ee-43e8-a755-2feb53e22cae")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Comment" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "712412de-61bf-479a-b79e-d05c4dc813ed")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Mouser Testing Part Number" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "a63adc98-66e8-4fa7-8c11-ac3e0f7541c7")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Mouser Testing Price/Stock" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "dc787d8e-a005-4965-84dd-575a94e1163e")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd dnp)
+	(fp_poly
+		(pts
+			(xy 1.9 4.75) (xy 4.75 4.75) (xy 4.75 1.9) (xy 3.75 1.9) (xy 1.9 3.75)
+		)
+		(stroke
+			(width 0.001)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Cu")
+		(uuid "f8fe8ed6-811c-4e6b-aad2-40f59a1954fb")
+	)
+	(fp_poly
+		(pts
+			(xy 4.75 -1.9) (xy 4.75 -4.75) (xy 1.9 -4.75) (xy 1.9 -3.75) (xy 3.75 -1.9)
+		)
+		(stroke
+			(width 0.001)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Cu")
+		(uuid "e32c4d9c-4e2b-4181-ba44-ccc545c30a4f")
+	)
+	(fp_poly
+		(pts
+			(xy 1.9 4.75) (xy 4.75 4.75) (xy 4.75 1.9) (xy 3.75 1.9) (xy 1.9 3.75)
+		)
+		(stroke
+			(width 0.001)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Mask")
+		(uuid "f53e83ed-eb5b-4f06-81e3-180b12ce37a3")
+	)
+	(fp_poly
+		(pts
+			(xy 4.75 -1.9) (xy 4.75 -4.75) (xy 1.9 -4.75) (xy 1.9 -3.75) (xy 3.75 -1.9)
+		)
+		(stroke
+			(width 0.001)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Mask")
+		(uuid "925c290e-e7be-4d56-9309-8e47ef1b8ab8")
+	)
+	(fp_line
+		(start 0.8 -1.4)
+		(end 0.8 1.4)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "ac8808a9-f985-4267-8dd1-965d3f233584")
+	)
+	(fp_line
+		(start 0.8 1.4)
+		(end 2.8 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "358dcf55-63e9-4419-966e-c420aff246eb")
+	)
+	(fp_line
+		(start 2.8 0)
+		(end 0.8 -1.4)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "d592e96f-9461-4694-9f4d-41ea7d5532e9")
+	)
+	(fp_poly
+		(pts
+			(xy 1.9 4.75) (xy 4.75 4.75) (xy 4.75 1.9) (xy 3.75 1.9) (xy 1.9 3.75)
+		)
+		(stroke
+			(width 0.001)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Paste")
+		(uuid "1a7d27a6-a137-462d-b3db-e3b3a44fe9fe")
+	)
+	(fp_poly
+		(pts
+			(xy 4.75 -1.9) (xy 4.75 -4.75) (xy 1.9 -4.75) (xy 1.9 -3.75) (xy 3.75 -1.9)
+		)
+		(stroke
+			(width 0.001)
+			(type solid)
+		)
+		(fill yes)
+		(layer "F.Paste")
+		(uuid "54ecf923-d874-4248-9920-65fbe80fb16e")
+	)
+	(fp_rect
+		(start -4.9 4.9)
+		(end 4.9 -4.9)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "cfae99ca-0a42-40d4-b8a3-9951417f5583")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "27d75636-75d7-4f3e-9cb7-a7f93ce85429")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd custom
+		(at -3.325 -4.25 270)
+		(size 1 2.85)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(options
+			(clearance outline)
+			(anchor rect)
+		)
+		(primitives
+			(gr_poly
+				(pts
+					(xy 2.35 1.425) (xy -0.5 1.425) (xy -0.5 -1.425) (xy 0.5 -1.425) (xy 2.35 0.425)
+				)
+				(width 0.001)
+				(fill yes)
+			)
+		)
+		(uuid "f8729eaf-90f8-44a1-a732-4d11545951a7")
+	)
+	(pad "2" smd custom
+		(at -3.325 4.25 270)
+		(size 1 2.85)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(options
+			(clearance outline)
+			(anchor rect)
+		)
+		(primitives
+			(gr_poly
+				(pts
+					(xy -2.35 1.425) (xy 0.5 1.425) (xy 0.5 -1.425) (xy -0.5 -1.425) (xy -2.35 0.425)
+				)
+				(width 0.001)
+				(fill yes)
+			)
+		)
+		(uuid "7fa87f85-1954-4c77-9d82-f6bf1faa8e82")
+	)
+	(embedded_fonts no)
+	(model "${QUANDIFY_FOOTPRINT_DIR}/3D/LET8540CS-3.6L-2.7-16-R.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)
