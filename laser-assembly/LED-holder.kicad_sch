@@ -1504,7 +1504,7 @@
 				)
 			)
 		)
-		(property "Comment" "Mount on the front with the full pun length"
+		(property "Comment" "Mount on the front with the full pin length"
 			(at 149.86 55.88 90)
 			(hide yes)
 			(show_name no)
