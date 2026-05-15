@@ -23,6 +23,9 @@ volatile uint16_t got_hit_counter = 0;
 uint8_t ir_msg_tx_buf[IR_MSG_MAX_LENGTH];
 uint8_t ir_msg_rx_buf[IR_MSG_MAX_LENGTH];
 
+// millisecond timer
+volatile uint32_t time_ms = 0;
+
 
 // =========== I2C command IDs ===============
 #define I2C_COMMAND_ID      0x01
@@ -798,18 +801,35 @@ int main(void){
 
     // Load configuration and game state from flash (name, "hit song", etc)
     storage_load();
+
+    // local variables
+    uint32_t time_last_shot = 0;
+    uint8_t trigger_released = 1;
+    uint8_t ammo = 5;
   
     // =========================================================
     // ======================= MAIN LOOP =======================
     // =========================================================
     while(1){
+
+        // ugly timer fix later
+        // approx 10-100 counts per 1 ms
+        time_ms += 1;
+
+
+
         
         // Check if trigger button pressed, and if so, SHOOT
         if(io_trigger_pressed()){
-            ir_send_id_name();
-            buzzer_shoot();
-            ir_send_hitsong();
-            Delay_Ms(200);
+            if(time_ms > time_last_shot + 10000 && trigger_released==1){
+                ir_send_id_name();
+                buzzer_shoot();
+                ir_send_hitsong();
+                time_last_shot = time_ms;
+                trigger_released = 0;
+            }           
+        }else{
+            trigger_released = 1;
         }
 
         // check if there is a new byte in the IR RECEIVER
