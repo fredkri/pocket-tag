@@ -5,7 +5,7 @@ Tiny laser tag SAO!
 
 Fully functional, based on a narrow beam IR LED, a VS838 IR demodulating receiver, a tiny 8-pin MCU and a cute 3d-printed blaster. Features beeps, flashes and excitement!
 
-<video controls src="pocket-tag.mp4" title=""></video>
+<video controls src="[pocket-tag.mp4](https://github.com/user-attachments/assets/28df99bf-3bec-410c-8004-f36519ebe3ff)" title=""></video>
 
 ## Bill of Materials
 
