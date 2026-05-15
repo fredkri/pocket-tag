@@ -175,6 +175,18 @@ void init_hardware(){
 }
 
 
+// MS millisecond timer for when times are better and this works
+
+// void TIM1_UP_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+
+// void TIM1_UP_IRQHandler(void){
+//     if(TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET){
+//         TIM_ClearITPendingBit(TIM1, TIM_IT_Update);
+//         time_ms++;
+//     }
+// }
+
+
 // =================== GPIO wrappers ================
 
 // TRIGGER BUTTON on D1 (or D3 on the prototype)
@@ -605,6 +617,10 @@ void buzzer_shoot(){
     buzzer_sweep(2500, 200, 120);
 }
 
+void buzzer_no_ammo(){
+    buzzer_sweep(400, 200, 50);
+}
+
 void buzzer_hit(){
     buzzer_sweep(800, 400, 100);
     Delay_Ms(30);
@@ -804,6 +820,7 @@ int main(void){
 
     // local variables
     uint32_t time_last_shot = 0;
+    uint32_t time_last_trigger = 0;
     uint8_t trigger_released = 1;
     uint8_t ammo = 5;
   
@@ -821,15 +838,27 @@ int main(void){
         
         // Check if trigger button pressed, and if so, SHOOT
         if(io_trigger_pressed()){
-            if(time_ms > time_last_shot + 10000 && trigger_released==1){
-                ir_send_id_name();
-                buzzer_shoot();
-                ir_send_hitsong();
-                time_last_shot = time_ms;
+            if(time_ms > time_last_trigger + 10000 && trigger_released==1){
+                time_last_trigger = time_ms; // 10-100 is a ms ishf
                 trigger_released = 0;
-            }           
+                if(ammo > 0){
+                    ir_send_id_name();
+                    buzzer_shoot();
+                    ir_send_hitsong();
+                    time_last_shot = time_ms;
+                    ammo --;
+                }else{
+                    buzzer_no_ammo();
+                } 
+            }          
         }else{
             trigger_released = 1;
+        }
+
+
+        //check for reload
+        if(time_ms > time_last_shot + 1000000){
+            ammo = 5;
         }
 
         // check if there is a new byte in the IR RECEIVER
