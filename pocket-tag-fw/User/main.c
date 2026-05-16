@@ -23,6 +23,10 @@ volatile uint16_t got_hit_counter = 0;
 uint8_t ir_msg_tx_buf[IR_MSG_MAX_LENGTH];
 uint8_t ir_msg_rx_buf[IR_MSG_MAX_LENGTH];
 
+
+// high level RX decode
+volatile uint8_t rx_decode_state = 1;
+
 // millisecond timer
 volatile uint32_t time_ms = 0;
 
@@ -323,16 +327,16 @@ uint16_t decode_rx(){
     static uint16_t bits_received = 0;
    
     time = get_gap();
-    
-    // scale because;
-    time >>= 4;
 
     // on timeout, reset state
     if(time == 0xFFFF){
-        state = 0;
+        state = 1;
         rx_data = 0;
         return 0;
     }
+
+    // scale because;
+    time >>= 4;
     
     switch(state){
         // // waiting for preamble. It can come at any time so we just assume its good
@@ -718,42 +722,43 @@ void storage_load(){
 
 
 // IR COMMUNICATION 
+
+
 void process_rx_data(uint16_t rx){
     
-    static uint8_t state = 1;
     static uint8_t length = 0;
     static uint8_t command = 0;
     static uint8_t buffer_pointer = 0;
 
-    switch(state){
+    switch(rx_decode_state){
     // Address matched, master writing to us
     case IR_WAIT_FOR_STARTBYTE:{
         if (rx == IR_MSG_STARTBYTE){
             length = 0;
-            state = IR_GET_LENGTH;
+            rx_decode_state = IR_GET_LENGTH;
         }
         break;
     }
     case IR_GET_LENGTH:{
         length = rx;
         if (length > IR_MSG_MAX_LENGTH){
-            state = IR_WAIT_FOR_STARTBYTE;
+            rx_decode_state = IR_WAIT_FOR_STARTBYTE;
         } else {
-        state = IR_GET_COMMAND;
+        rx_decode_state = IR_GET_COMMAND;
         }
         break;
     }
     case IR_GET_COMMAND:{
         command = rx;
         // add safety checks
-        state = IR_GET_PAYLOAD;
+        rx_decode_state = IR_GET_PAYLOAD;
         break;
     }
     case IR_GET_PAYLOAD:{
         ir_msg_rx_buf[buffer_pointer++] = rx;
         length--;
         if (length == 0) {
-            state = IR_GET_CHECKSUM;
+            rx_decode_state = IR_GET_CHECKSUM;
         }
         break;
     }
@@ -761,7 +766,7 @@ void process_rx_data(uint16_t rx){
         if (command == IR_MSG_PLAYER_ID_NAME){
             flash_and_buzz();
         }
-        state = IR_WAIT_FOR_STARTBYTE;
+        rx_decode_state = IR_WAIT_FOR_STARTBYTE;
         break;
     }
     default:
