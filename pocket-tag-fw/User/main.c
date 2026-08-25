@@ -804,7 +804,7 @@ void ir_send_message(uint8_t *buf, uint8_t len){
     uint8_t cs = len;
     ir_send_preamble();
     send_byte(IR_MSG_STARTBYTE);
-    send_byte(len);
+    send_byte(len-1);
     for (uint8_t i = 0; i < len; i++) {
         cs += buf[i];
         send_byte(buf[i]);
