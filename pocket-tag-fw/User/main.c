@@ -641,7 +641,12 @@ void buzzer_hit(){
     buzzer_sweep(600, 150, 100);
     Delay_Ms(40);
     buzzer_sweep(350, 60, 160);
+}
 
+void buzzer_reload(){
+    buzzer_sweep(350, 150, 50);
+    Delay_Ms(30);
+    buzzer_sweep(300, 500, 50);
 }
 
 // flash an LED (you guessed it! shitty implementation using delay! Not that it matters here)
@@ -848,7 +853,7 @@ int main(void){
     uint32_t time_last_shot = 0;
     uint32_t time_last_trigger = 0;
     uint8_t trigger_released = 1;
-    uint8_t ammo = 5;
+    uint8_t ammo = 6;
   
     // =========================================================
     // ======================= MAIN LOOP =======================
@@ -858,13 +863,10 @@ int main(void){
         // ugly timer fix later
         // approx 10-100 counts per 1 ms
         time_ms += 1;
-
-
-
         
         // Check if trigger button pressed, and if so, SHOOT
         if(io_trigger_pressed()){
-            if(time_ms > time_last_trigger + 10000 && trigger_released==1){
+            if(time_ms > time_last_trigger + 1000 && trigger_released==1){
                 time_last_trigger = time_ms; // 10-100 is a ms ishf
                 trigger_released = 0;
                 if(ammo > 0){
@@ -883,8 +885,9 @@ int main(void){
 
 
         //check for reload
-        if(time_ms > time_last_shot + 1000000){
-            ammo = 5;
+        if(time_ms > time_last_shot + 300000 && ammo<6){
+            ammo = 6;
+            buzzer_reload();
         }
 
         // check if there is a new byte in the IR RECEIVER
