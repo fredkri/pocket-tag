@@ -144,6 +144,16 @@ void init_hardware(){
     TIM_TimeBaseInit(TIM2, &TIM_TimeBaseInitStructure);
     TIM_Cmd(TIM2, ENABLE);
 
+
+    // === TIM1 as a convinient system timer, in cs (centi-seconds) ===
+     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
+    TIM_TimeBaseInitStructure.TIM_Prescaler = 59997;
+    TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
+    TIM_TimeBaseInitStructure.TIM_Period = 0xFFFF;
+    TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV4;
+    TIM_TimeBaseInit(TIM1, &TIM_TimeBaseInitStructure);
+    TIM_Cmd(TIM1, ENABLE);
+
     // === I2C on pins PC1(SDA) and PC2(SCL) ====
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
 
@@ -730,6 +740,16 @@ void process_rx_data(uint16_t rx){
     static uint8_t command = 0;
     static uint8_t buffer_pointer = 0;
 
+    static uint16_t last_byte_timestamp = 0;
+
+    // check if the local buffer is old and stale
+    // meaning that the fresh new byte is actually the start of a new message
+    if(TIM1->CNT - last_byte_timestamp > 50){
+        rx_decode_state = IR_WAIT_FOR_STARTBYTE;
+    }
+    last_byte_timestamp = TIM1->CNT;
+
+
     switch(rx_decode_state){
     // Address matched, master writing to us
     case IR_WAIT_FOR_STARTBYTE:{
@@ -744,7 +764,7 @@ void process_rx_data(uint16_t rx){
         if (length > IR_MSG_MAX_LENGTH){
             rx_decode_state = IR_WAIT_FOR_STARTBYTE;
         } else {
-        rx_decode_state = IR_GET_COMMAND;
+            rx_decode_state = IR_GET_COMMAND;
         }
         break;
     }
@@ -752,6 +772,7 @@ void process_rx_data(uint16_t rx){
         command = rx;
         // add safety checks
         rx_decode_state = IR_GET_PAYLOAD;
+        buffer_pointer = 0;
         break;
     }
     case IR_GET_PAYLOAD:{
